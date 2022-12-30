@@ -3,15 +3,18 @@ from socket import *
 import pickle
 import struct
 import threading
+import numpy
 
-HEADER = 64 #CAN CHNAGE DEPENDING ON APPLICATION
-HEADER_FORMAT = "utf-8"
-DISCONNECT_MESSAGE = "DISCOUNTED"
-SERVER_PORT = 12001
+
+HEADER = 4 #CAN CHNAGE DEPENDING ON APPLICATION
+HEADER_FORMAT = "unicode_escape"
+SERVER_PORT = 12004
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('',SERVER_PORT))
 serverSocket.listen(10)
 print('The server is ready to receive')
+
+
 
 def start_server():
 
@@ -24,50 +27,39 @@ def start_server():
             print(f"ACTIVE CONNECTIONS {threading.activeCount() - 1}")
             print(connectionSocket.getpeername())
     except Exception as exp:
-        print("Error:", exp)
+        print("Error while starting:", exp)
     finally:
         print("connection ended")
     
 
 def deal_client_request(connectionSocket, addr):
     connected = True
+    payload_size = struct.calcsize("Q")
     try:
+        data = b''
         while connected:
-            msgLength = connectionSocket.recv(HEADER).decode(HEADER_FORMAT)
-            print(msgLength)
-            if msgLength.isspace():
-                continue
-            frame = connectionSocket.recv(4096)
-            print(len(frame), msgLength)
-            while len(frame) <= int(msgLength):
-                frame += connectionSocket.recv(4096)
-            frame = pickle.loads(frame)
-
-            #if msg == DISCONNECT_MESSAGE:
-                #connected = False
-                
-            
-            cv.imshow('Frame', frame)
-            if cv.waitKey(1) & 0xFF == ord("q"):
-                connected = False
+            while len(data) < payload_size:
+                packet = connectionSocket.recv(1024)
+                if not packet:
+                    break
+                data += packet
+            size = data[:payload_size]
+            data = data[payload_size:]
+            size = struct.unpack("Q",size)[0]
+            while len(data) < size:
+                data += connectionSocket.recv(1024)
+            frame_data = data[:size]
+            frame_data = pickle.loads(frame_data)
+            data = data[size:]
+            cv.imshow('client',frame_data)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+    except Exception as exp:
+        print("Error in thread", exp)
     finally:
         connectionSocket.close()
+        cap.release()
+
 
 start_server()
-connectionSocket.close()
-
-
-
-#sizeOfLength = struct.calcsize(">L")
-#data = msg[sizeOfLength:]
-#msglen = struct.unpack(">L", msg[:sizeOfLength])[0]
-#print(msglen)
-#while len(data) < msglen:
-#    new = connectionSocket.recv(4096)
-#    data = data + new
-#print("first:", len(data))
-#print()
-#data = pickle.loads(data)
-#start_server()
-
 
