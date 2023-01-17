@@ -1,2 +1,4 @@
 # VideoStreamingProject
-Surveillance system in Python where you will get live video stream from a camera at the server
+Surveillance system in Python using TCP protocol 
+Multithreaded server recieves the video stream from the client side and run on the server side.
+
