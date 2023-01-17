@@ -7,7 +7,7 @@ import imutils
 HEADER = 8
 HEADER_FORMAT = "unicode_escape"
 SERVER_NAME = 'localhost'	# 'servername'
-SERVER_PORT = 12004
+SERVER_PORT = 12006
 
 clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((SERVER_NAME, SERVER_PORT))
@@ -15,6 +15,10 @@ print("Starting video capture")
 cap = cv.VideoCapture(0)
 if not cap.isOpened():
         print("Cannot open camera")
+
+width= int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+height= int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+print(width, height)
 
 def start_client():
         connected = True

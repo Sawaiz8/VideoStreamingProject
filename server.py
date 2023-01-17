@@ -4,17 +4,21 @@ import pickle
 import struct
 import threading
 import numpy
+from random import randint
 
 
 HEADER = 4 #CAN CHNAGE DEPENDING ON APPLICATION
 HEADER_FORMAT = "unicode_escape"
-SERVER_PORT = 12004
+SERVER_PORT = 12006
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('',SERVER_PORT))
 serverSocket.listen(10)
 print('The server is ready to receive')
 
 
+WINDOW_WIDTH = 640
+WINDOW_HEIGHT = 480
+ 
 
 def start_server():
 
@@ -26,6 +30,7 @@ def start_server():
             thread.start()
             print(f"ACTIVE CONNECTIONS {threading.activeCount() - 1}")
             print(connectionSocket.getpeername())
+            clientNo = threading.activeCount() - 1            
     except Exception as exp:
         print("Error while starting:", exp)
     finally:
@@ -33,6 +38,8 @@ def start_server():
     
 
 def deal_client_request(connectionSocket, addr):
+    clientNo = randint(1,100000)
+    writer = cv.VideoWriter('recording/server_video.mp4v', cv.VideoWriter_fourcc(*'DIVX'), 30, (WINDOW_WIDTH, WINDOW_HEIGHT))
     connected = True
     payload_size = struct.calcsize("Q")
     try:
@@ -51,6 +58,7 @@ def deal_client_request(connectionSocket, addr):
             frame_data = data[:size]
             frame_data = pickle.loads(frame_data)
             data = data[size:]
+            writer.write(frame_data)
             cv.imshow('client',frame_data)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -58,8 +66,8 @@ def deal_client_request(connectionSocket, addr):
         print("Error in thread", exp)
     finally:
         connectionSocket.close()
-        cap.release()
-
+        writer.release()
+        cv.destroyAllWindows()
 
 start_server()
 

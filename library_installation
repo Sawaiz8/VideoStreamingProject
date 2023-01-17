@@ -2,3 +2,6 @@ FIrst install python 3.8 not 3.5. It is too old.
 Then install opencv using: conda install -c menpo opencv 
 It is a command I saw a lot. Here, is the stackoverflow link.
 https://stackoverflow.com/questions/74336340/installation-of-opencvcv2-in-anaconda3-environment-on-ubuntu-20-04-python-3-9
+HAd to send data togather with frame. 
+missed cap.waitkey in the last took me so much time to display everything
+
